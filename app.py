@@ -1,32 +1,23 @@
 import streamlit as st
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
+import pickle
 
-# Load dataset
-data = pd.read_csv("cleaned_dataset.csv")
-
-X = data["text"]
-y = data["label"]
-
-# Vectorization
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(X)
-
-# Train model
-model = LogisticRegression()
-model.fit(X, y)
+# Load model
+model = pickle.load(open("model.pkl", "rb"))
+vectorizer = pickle.load(open("vectorizer.pkl", "rb"))
 
 # UI
-st.title("📰 Fake News Detection App")
+st.title("Fake News Detection App")
 
-user_input = st.text_area("Enter News Text:")
+text = st.text_area("Enter News Text")
 
 if st.button("Check News"):
-    input_data = vectorizer.transform([user_input])
-    prediction = model.predict(input_data)
-
-    if prediction[0] == 1:
-        st.success("✅ Real News")
+    if text.strip() == "":
+        st.warning("Please enter some text")
     else:
-        st.error("❌ Fake News")
+        vec = vectorizer.transform([text])
+        result = model.predict(vec)
+        
+        if result[0] == 0:
+            st.error("Fake News ❌")
+        else:
+            st.success("Real News ✅")
